@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useEventos } from "@/composables/useCalendario";
 import { useOficinas } from "@/composables/useOficinas";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -22,6 +22,15 @@ const { oficinas, fetchOficinas } = useOficinas();
 
 const dialogOpen = ref(false);
 const form = ref<Partial<Evento>>({ titulo: "", status: "agendado", data_evento: new Date().toISOString().slice(0, 10) });
+
+const formLocal = computed({
+  get: () => form.value.local ?? undefined,
+  set: (v) => { form.value.local = v ?? null; },
+});
+const formDescricao = computed({
+  get: () => form.value.descricao ?? undefined,
+  set: (v) => { form.value.descricao = v ?? null; },
+});
 
 const statusTone: Record<string, string> = {
   agendado: "outline", confirmado: "secondary", realizado: "default", cancelado: "destructive",
@@ -57,7 +66,7 @@ onMounted(async () => {
             <div class="grid gap-1.5"><Label>Título</Label><Input v-model="form.titulo" /></div>
             <div class="grid grid-cols-2 gap-3">
               <div class="grid gap-1.5"><Label>Data</Label><Input v-model="form.data_evento" type="date" /></div>
-              <div class="grid gap-1.5"><Label>Local</Label><Input v-model="form.local" /></div>
+              <div class="grid gap-1.5"><Label>Local</Label><Input v-model="formLocal" /></div>
             </div>
             <div class="grid gap-1.5">
               <Label>Oficina relacionada</Label>
@@ -68,7 +77,7 @@ onMounted(async () => {
                 </SelectContent>
               </Select>
             </div>
-            <div class="grid gap-1.5"><Label>Descrição</Label><Textarea v-model="form.descricao" rows="3" /></div>
+            <div class="grid gap-1.5"><Label>Descrição</Label><Textarea v-model="formDescricao" rows="3" /></div>
           </div>
           <DialogFooter>
             <Button variant="outline" @click="dialogOpen = false">Cancelar</Button>

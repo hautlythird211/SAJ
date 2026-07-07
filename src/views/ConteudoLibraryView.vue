@@ -27,6 +27,15 @@ const dialogOpen = ref(false);
 
 const form = ref<Partial<Conteudo>>({ titulo: "", tipo: "foto", status: "rascunho" });
 
+const formArquivoUrl = computed({
+  get: () => form.value.arquivo_url ?? undefined,
+  set: (v) => { form.value.arquivo_url = v ?? null; },
+});
+const formDescricao = computed({
+  get: () => form.value.descricao ?? undefined,
+  set: (v) => { form.value.descricao = v ?? null; },
+});
+
 const tipoIcon: Record<string, any> = { foto: ImageIcon, video: Video, texto: FileText, depoimento: Quote, bastidor: ImageIcon };
 const statusTone: Record<string, string> = {
   rascunho: "outline", em_revisao: "secondary", aprovado: "default", publicado: "default", rejeitado: "destructive",
@@ -127,11 +136,11 @@ onMounted(async () => {
             </div>
             <div class="grid gap-1.5">
               <Label>URL do arquivo</Label>
-              <Input v-model="form.arquivo_url" placeholder="https://..." />
+              <Input v-model="formArquivoUrl" placeholder="https://..." />
             </div>
             <div class="grid gap-1.5">
               <Label>Descrição</Label>
-              <Textarea v-model="form.descricao" rows="3" />
+              <Textarea v-model="formDescricao" rows="3" />
             </div>
           </div>
           <DialogFooter>

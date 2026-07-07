@@ -30,6 +30,11 @@ const form = ref<Partial<CalendarioItem>>({
   data_publicacao: new Date().toISOString().slice(0, 10),
 });
 
+const formLegenda = computed({
+  get: () => form.value.legenda ?? undefined,
+  set: (v) => { form.value.legenda = v ?? null; },
+});
+
 const monthLabel = computed(() =>
   refDate.value.toLocaleDateString("pt-BR", { month: "long", year: "numeric" }),
 );
@@ -167,7 +172,7 @@ onMounted(async () => {
             </div>
             <div class="grid gap-1.5">
               <Label>Legenda / notas</Label>
-              <Textarea v-model="form.legenda" rows="3" placeholder="Rascunho da legenda..." />
+              <Textarea v-model="formLegenda" rows="3" placeholder="Rascunho da legenda..." />
             </div>
           </div>
           <DialogFooter>

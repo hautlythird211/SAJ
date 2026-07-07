@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useOficinas } from "@/composables/useOficinas";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,6 +24,19 @@ const oficinaDialog = ref(false);
 const professorDialog = ref(false);
 const oficinaForm = ref<Partial<Oficina>>({ nome: "", cor: "#6366f1" });
 const professorForm = ref<Partial<Professor>>({ nome: "" });
+
+const oficinaDescricao = computed({
+  get: () => oficinaForm.value.descricao ?? undefined,
+  set: (v) => { oficinaForm.value.descricao = v ?? null; },
+});
+const professorEmail = computed({
+  get: () => professorForm.value.email ?? undefined,
+  set: (v) => { professorForm.value.email = v ?? null; },
+});
+const professorBio = computed({
+  get: () => professorForm.value.bio ?? undefined,
+  set: (v) => { professorForm.value.bio = v ?? null; },
+});
 
 async function saveOficinaForm() {
   await saveOficina(oficinaForm.value);
@@ -56,7 +69,7 @@ onMounted(async () => {
             <DialogHeader><DialogTitle>Nova oficina</DialogTitle></DialogHeader>
             <div class="grid gap-3 py-2">
               <div class="grid gap-1.5"><Label>Nome</Label><Input v-model="oficinaForm.nome" /></div>
-              <div class="grid gap-1.5"><Label>Descrição</Label><Textarea v-model="oficinaForm.descricao" rows="2" /></div>
+              <div class="grid gap-1.5"><Label>Descrição</Label><Textarea v-model="oficinaDescricao" rows="2" /></div>
               <div class="grid gap-1.5"><Label>Cor</Label><Input v-model="oficinaForm.cor" type="color" class="h-10 w-16 p-1" /></div>
             </div>
             <DialogFooter>
@@ -88,7 +101,7 @@ onMounted(async () => {
             <DialogHeader><DialogTitle>Novo professor</DialogTitle></DialogHeader>
             <div class="grid gap-3 py-2">
               <div class="grid gap-1.5"><Label>Nome</Label><Input v-model="professorForm.nome" /></div>
-              <div class="grid gap-1.5"><Label>E-mail</Label><Input v-model="professorForm.email" type="email" /></div>
+              <div class="grid gap-1.5"><Label>E-mail</Label><Input v-model="professorEmail" type="email" /></div>
               <div class="grid gap-1.5">
                 <Label>Oficina</Label>
                 <Select v-model="professorForm.oficina_id">
@@ -98,7 +111,7 @@ onMounted(async () => {
                   </SelectContent>
                 </Select>
               </div>
-              <div class="grid gap-1.5"><Label>Bio</Label><Textarea v-model="professorForm.bio" rows="2" /></div>
+              <div class="grid gap-1.5"><Label>Bio</Label><Textarea v-model="professorBio" rows="2" /></div>
             </div>
             <DialogFooter>
               <Button variant="outline" @click="professorDialog = false">Cancelar</Button>
