@@ -99,3 +99,4 @@ Depois de criar a conta pelo Supabase Auth (ou tela de login), promova manualmen
 ```sql
 update profiles set role = 'admin' where id = 'UUID_DO_USUARIO';
 ```
+# SAJ
