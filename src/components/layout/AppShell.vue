@@ -41,7 +41,7 @@ const route = useRoute();
 const { profile, isReviewerOrAbove, isAdmin, signOut } = useAuth();
 
 const nav = [
-  { to: "/", name: "dashboard", label: "Painel", icon: LayoutDashboard },
+  { to: "/dashboard", name: "dashboard", label: "Painel", icon: LayoutDashboard },
   { to: "/calendario", name: "calendario", label: "Calendário Editorial", icon: CalendarDays },
   { to: "/conteudos", name: "conteudos", label: "Conteúdos", icon: ImageIcon },
   { to: "/oficinas", name: "oficinas", label: "Oficinas & Professores", icon: Users },

@@ -4,9 +4,10 @@ import { supabase } from "@/lib/supabase";
 const router = createRouter({
   history: createWebHistory(),
   routes: [
+    { path: "/", name: "landing", component: () => import("@/views/LandingView.vue"), meta: { public: true } },
     { path: "/login", name: "login", component: () => import("@/views/LoginView.vue"), meta: { public: true } },
     {
-      path: "/",
+      path: "/dashboard",
       component: () => import("@/components/layout/AppShell.vue"),
       meta: { requiresAuth: true },
       children: [
@@ -33,7 +34,11 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to) => {
-  if (to.meta.public) return true;
+  if (to.meta.public) {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session && to.name === "landing") return { name: "dashboard" };
+    return true;
+  }
 
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) return { name: "login" };

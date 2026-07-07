@@ -20,7 +20,7 @@ async function onSubmit() {
   loading.value = true;
   try {
     await signInWithPassword(email.value, password.value);
-    router.push("/");
+    router.push("/dashboard");
   } catch (e) {
     error.value = "E-mail ou senha inválidos.";
   } finally {
