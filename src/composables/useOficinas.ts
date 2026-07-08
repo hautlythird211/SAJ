@@ -6,40 +6,61 @@ export function useOficinas() {
   const oficinas = ref<Oficina[]>([]);
   const professores = ref<Professor[]>([]);
   const loading = ref(false);
+  const error = ref<string | null>(null);
 
   async function fetchOficinas() {
     loading.value = true;
-    const { data, error } = await supabase.from("oficinas").select("*").order("nome");
-    if (!error) oficinas.value = (data ?? []) as Oficina[];
+    error.value = null;
+    const { data, error: err } = await supabase.from("oficinas").select("*").order("nome");
+    if (err) {
+      error.value = err.message;
+    } else {
+      oficinas.value = (data ?? []) as Oficina[];
+    }
     loading.value = false;
   }
 
   async function fetchProfessores() {
-    const { data, error } = await supabase.from("professores").select("*").order("nome");
-    if (!error) professores.value = (data ?? []) as Professor[];
+    error.value = null;
+    const { data, error: err } = await supabase.from("professores").select("*").order("nome");
+    if (err) {
+      error.value = err.message;
+    } else {
+      professores.value = (data ?? []) as Professor[];
+    }
   }
 
   async function saveProfessor(payload: Partial<Professor>) {
-    if (payload.id) {
-      const { error } = await supabase.from("professores").update(payload).eq("id", payload.id);
-      if (error) throw error;
-    } else {
-      const { error } = await supabase.from("professores").insert(payload);
-      if (error) throw error;
+    error.value = null;
+    try {
+      if (payload.id) {
+        const { error: err } = await supabase.from("professores").update(payload).eq("id", payload.id);
+        if (err) throw err;
+      } else {
+        const { error: err } = await supabase.from("professores").insert(payload);
+        if (err) throw err;
+      }
+      await fetchProfessores();
+    } catch (e) {
+      error.value = (e as Error).message;
     }
-    await fetchProfessores();
   }
 
   async function saveOficina(payload: Partial<Oficina>) {
-    if (payload.id) {
-      const { error } = await supabase.from("oficinas").update(payload).eq("id", payload.id);
-      if (error) throw error;
-    } else {
-      const { error } = await supabase.from("oficinas").insert(payload);
-      if (error) throw error;
+    error.value = null;
+    try {
+      if (payload.id) {
+        const { error: err } = await supabase.from("oficinas").update(payload).eq("id", payload.id);
+        if (err) throw err;
+      } else {
+        const { error: err } = await supabase.from("oficinas").insert(payload);
+        if (err) throw err;
+      }
+      await fetchOficinas();
+    } catch (e) {
+      error.value = (e as Error).message;
     }
-    await fetchOficinas();
   }
 
-  return { oficinas, professores, loading, fetchOficinas, fetchProfessores, saveProfessor, saveOficina };
+  return { oficinas, professores, loading, error, fetchOficinas, fetchProfessores, saveProfessor, saveOficina };
 }

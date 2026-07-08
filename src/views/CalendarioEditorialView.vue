@@ -18,7 +18,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Plus, ChevronLeft, ChevronRight } from "@lucide/vue";
 import type { CalendarioItem } from "@/lib/types";
 
-const { itens, loading, fetchCalendario, createItem, updateItem } = useCalendario();
+const { itens, loading, fetchCalendario, createItem, updateItem, deleteItem } = useCalendario();
 const { oficinas, fetchOficinas } = useOficinas();
 
 const refDate = ref(new Date());
@@ -83,17 +83,36 @@ function openEdit(item: CalendarioItem) {
   dialogOpen.value = true;
 }
 
+const saving = ref(false);
+
 async function save() {
-  if (editing.value?.id) {
-    await updateItem(editing.value.id, form.value);
-  } else {
-    await createItem(form.value);
+  saving.value = true;
+  try {
+    if (editing.value?.id) {
+      await updateItem(editing.value.id, form.value);
+    } else {
+      await createItem(form.value);
+    }
+    dialogOpen.value = false;
+    reload();
+  } finally {
+    saving.value = false;
   }
-  dialogOpen.value = false;
-  reload();
 }
 
-const statusTone: Record<string, string> = {
+async function remove(id: string) {
+  if (!confirm("Excluir este item?")) return;
+  saving.value = true;
+  try {
+    await deleteItem(id);
+    dialogOpen.value = false;
+    reload();
+  } finally {
+    saving.value = false;
+  }
+}
+
+const statusTone: Record<string, import("@/lib/types").BadgeVariant> = {
   planejado: "secondary", em_producao: "outline", pronto: "default",
   publicado: "default", atrasado: "destructive", cancelado: "outline",
 };
@@ -177,7 +196,8 @@ onMounted(async () => {
           </div>
           <DialogFooter>
             <Button variant="outline" @click="dialogOpen = false">Cancelar</Button>
-            <Button @click="save">Salvar</Button>
+            <Button variant="destructive" v-if="editing?.id" :disabled="saving" @click="remove(editing.id)">Excluir</Button>
+            <Button :disabled="saving" @click="save">{{ saving ? "Salvando..." : "Salvar" }}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -245,7 +265,7 @@ onMounted(async () => {
               <TableCell class="hidden sm:table-cell">{{ item.oficinas?.nome ?? "—" }}</TableCell>
               <TableCell class="hidden sm:table-cell capitalize">{{ item.plataforma }}</TableCell>
               <TableCell>
-                <Badge :variant="(statusTone[item.status] as any) ?? 'default'">{{ item.status }}</Badge>
+                <Badge :variant="statusTone[item.status] ?? 'default'">{{ item.status }}</Badge>
               </TableCell>
             </TableRow>
             <TableRow v-if="!loading && itens.length === 0">

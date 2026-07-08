@@ -1,9 +1,16 @@
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-const supabasePublishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-export const supabase = createClient(supabaseUrl, supabasePublishableKey);
+if (!supabaseUrl) {
+  throw new Error("VITE_SUPABASE_URL não configurada no .env");
+}
+if (!supabaseAnonKey) {
+  throw new Error("VITE_SUPABASE_PUBLISHABLE_KEY não configurada no .env");
+}
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Helper para chamar as Edge Functions com o JWT do usuário logado
 export async function callFunction<T = unknown>(
@@ -19,7 +26,7 @@ export async function callFunction<T = unknown>(
     method: opts.method ?? "GET",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${session?.access_token ?? supabasePublishableKey}`,
+      Authorization: `Bearer ${session?.access_token ?? supabaseAnonKey}`,
     },
     body: opts.body ? JSON.stringify(opts.body) : undefined,
   });

@@ -4,24 +4,32 @@ import type { Profile } from "@/lib/types";
 
 const profile = ref<Profile | null>(null);
 const loading = ref(true);
+const initialized = ref(false);
 
 async function loadProfile() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     profile.value = null;
     loading.value = false;
+    initialized.value = true;
     return;
   }
-  const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
-  profile.value = data as Profile | null;
+  const { data, error } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+  if (error) {
+    console.error("Falha ao carregar perfil:", error.message);
+    profile.value = null;
+  } else {
+    profile.value = data as Profile | null;
+  }
   loading.value = false;
+  initialized.value = true;
 }
 
 supabase.auth.onAuthStateChange(() => loadProfile());
 
 export function useAuth() {
   onMounted(() => {
-    if (loading.value) loadProfile();
+    if (!initialized.value) loadProfile();
   });
 
   const isStaffOrAbove = computed(() =>

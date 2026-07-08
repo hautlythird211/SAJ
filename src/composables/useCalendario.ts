@@ -5,66 +5,111 @@ import type { CalendarioItem, Evento } from "@/lib/types";
 export function useCalendario() {
   const itens = ref<CalendarioItem[]>([]);
   const loading = ref(false);
+  const error = ref<string | null>(null);
 
   async function fetchCalendario(from?: string, to?: string) {
     loading.value = true;
-    const res = await callFunction<{ data: CalendarioItem[] }>("staff-calendar", {
-      params: { resource: "calendario", from, to } as Record<string, string>,
-    });
-    itens.value = res.data;
-    loading.value = false;
+    error.value = null;
+    try {
+      const params: Record<string, string> = { resource: "calendario" };
+      if (from) params.from = from;
+      if (to) params.to = to;
+      const res = await callFunction<{ data: CalendarioItem[] }>("staff-calendar", { params });
+      itens.value = res.data;
+    } catch (e) {
+      error.value = (e as Error).message;
+    } finally {
+      loading.value = false;
+    }
   }
 
   async function createItem(payload: Partial<CalendarioItem>) {
-    await callFunction("staff-calendar", { method: "POST", params: { resource: "calendario" }, body: payload });
-    await fetchCalendario();
+    error.value = null;
+    try {
+      await callFunction("staff-calendar", { method: "POST", params: { resource: "calendario" }, body: payload });
+      await fetchCalendario();
+    } catch (e) {
+      error.value = (e as Error).message;
+    }
   }
 
   async function updateItem(id: string, payload: Partial<CalendarioItem>) {
-    await callFunction("staff-calendar", {
-      method: "PATCH",
-      params: { resource: "calendario", id },
-      body: payload,
-    });
-    await fetchCalendario();
+    error.value = null;
+    try {
+      await callFunction("staff-calendar", {
+        method: "PATCH",
+        params: { resource: "calendario", id },
+        body: payload,
+      });
+      await fetchCalendario();
+    } catch (e) {
+      error.value = (e as Error).message;
+    }
   }
 
   async function deleteItem(id: string) {
-    await callFunction("staff-calendar", { method: "DELETE", params: { resource: "calendario", id } });
-    await fetchCalendario();
+    error.value = null;
+    try {
+      await callFunction("staff-calendar", { method: "DELETE", params: { resource: "calendario", id } });
+      await fetchCalendario();
+    } catch (e) {
+      error.value = (e as Error).message;
+    }
   }
 
   async function publicarItem(id: string) {
-    await callFunction("reviewer-review", {
-      method: "POST",
-      body: { alvo: "calendario", id, decisao: "publicado" },
-    });
-    await fetchCalendario();
+    error.value = null;
+    try {
+      await callFunction("reviewer-review", {
+        method: "POST",
+        body: { alvo: "calendario", id, decisao: "publicado" },
+      });
+      await fetchCalendario();
+    } catch (e) {
+      error.value = (e as Error).message;
+    }
   }
 
-  return { itens, loading, fetchCalendario, createItem, updateItem, deleteItem, publicarItem };
+  return { itens, loading, error, fetchCalendario, createItem, updateItem, deleteItem, publicarItem };
 }
 
 export function useEventos() {
   const eventos = ref<Evento[]>([]);
   const loading = ref(false);
+  const error = ref<string | null>(null);
 
   async function fetchEventos() {
     loading.value = true;
-    const res = await callFunction<{ data: Evento[] }>("staff-calendar", { params: { resource: "eventos" } });
-    eventos.value = res.data;
-    loading.value = false;
+    error.value = null;
+    try {
+      const res = await callFunction<{ data: Evento[] }>("staff-calendar", { params: { resource: "eventos" } });
+      eventos.value = res.data;
+    } catch (e) {
+      error.value = (e as Error).message;
+    } finally {
+      loading.value = false;
+    }
   }
 
   async function createEvento(payload: Partial<Evento>) {
-    await callFunction("staff-calendar", { method: "POST", params: { resource: "eventos" }, body: payload });
-    await fetchEventos();
+    error.value = null;
+    try {
+      await callFunction("staff-calendar", { method: "POST", params: { resource: "eventos" }, body: payload });
+      await fetchEventos();
+    } catch (e) {
+      error.value = (e as Error).message;
+    }
   }
 
   async function updateEvento(id: string, payload: Partial<Evento>) {
-    await callFunction("staff-calendar", { method: "PATCH", params: { resource: "eventos", id }, body: payload });
-    await fetchEventos();
+    error.value = null;
+    try {
+      await callFunction("staff-calendar", { method: "PATCH", params: { resource: "eventos", id }, body: payload });
+      await fetchEventos();
+    } catch (e) {
+      error.value = (e as Error).message;
+    }
   }
 
-  return { eventos, loading, fetchEventos, createEvento, updateEvento };
+  return { eventos, loading, error, fetchEventos, createEvento, updateEvento };
 }

@@ -1,4 +1,5 @@
 export type UserRole = "admin" | "staff" | "reviewer" | "viewer";
+export type BadgeVariant = "default" | "secondary" | "destructive" | "outline";
 
 export interface Profile {
   id: string;

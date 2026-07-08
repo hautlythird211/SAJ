@@ -6,6 +6,15 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FileImage, ClipboardList, CalendarClock, AlertTriangle } from "@lucide/vue";
 
+interface ProximoItem {
+  id: string;
+  titulo: string;
+  data_publicacao: string;
+  status: string;
+  plataforma: string;
+  oficinas: { nome: string; cor: string } | null;
+}
+
 const loading = ref(true);
 const resumo = ref({
   publicacoes_mes: 0,
@@ -13,18 +22,23 @@ const resumo = ref({
   proximos_eventos: 0,
   publicacoes_atrasadas: 0,
 });
-const proximosItens = ref<any[]>([]);
+const proximosItens = ref<ProximoItem[]>([]);
 
 onMounted(async () => {
   const { data } = await supabase.from("vw_resumo_mensal").select("*").single();
-  if (data) resumo.value = data as any;
+  if (data) {
+    resumo.value.publicacoes_mes = data.publicacoes_mes ?? 0;
+    resumo.value.pendentes_revisao = data.pendentes_revisao ?? 0;
+    resumo.value.proximos_eventos = data.proximos_eventos ?? 0;
+    resumo.value.publicacoes_atrasadas = data.publicacoes_atrasadas ?? 0;
+  }
 
   const { data: itens } = await supabase
     .from("calendario_editorial")
     .select("id, titulo, data_publicacao, status, plataforma, oficinas(nome, cor)")
     .order("data_publicacao", { ascending: true })
     .limit(6);
-  proximosItens.value = itens ?? [];
+  proximosItens.value = (itens ?? []) as unknown as ProximoItem[];
   loading.value = false;
 });
 
@@ -46,7 +60,7 @@ const cards = [
         </CardHeader>
         <CardContent>
           <Skeleton v-if="loading" class="h-8 w-16" />
-          <div v-else class="text-2xl font-bold">{{ (resumo as any)[c.key] }}</div>
+          <div v-else class="text-2xl font-bold">{{ resumo[c.key] }}</div>
         </CardContent>
       </Card>
     </div>

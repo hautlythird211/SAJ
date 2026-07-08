@@ -44,7 +44,7 @@ onMounted(load);
           <TableCell class="flex items-center gap-2">
             <Avatar class="size-7">
               <AvatarImage :src="m.avatar_url ?? ''" />
-              <AvatarFallback class="text-xs">{{ m.full_name[0] }}</AvatarFallback>
+              <AvatarFallback class="text-xs">{{ m.full_name[0] ?? "?" }}</AvatarFallback>
             </Avatar>
             {{ m.full_name }}
           </TableCell>
@@ -52,7 +52,7 @@ onMounted(load);
             <Badge :variant="m.ativo ? 'default' : 'outline'">{{ m.ativo ? "ativo" : "inativo" }}</Badge>
           </TableCell>
           <TableCell>
-            <Select :model-value="m.role" @update:model-value="(v) => updateRole(m.id, v as string)">
+            <Select :model-value="m.role" @update:model-value="(v) => updateRole(m.id, v != null ? String(v) : 'viewer')">
               <SelectTrigger class="w-40"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="viewer">Visualizador</SelectItem>

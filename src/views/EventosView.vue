@@ -32,7 +32,7 @@ const formDescricao = computed({
   set: (v) => { form.value.descricao = v ?? null; },
 });
 
-const statusTone: Record<string, string> = {
+const statusTone: Record<string, import("@/lib/types").BadgeVariant> = {
   agendado: "outline", confirmado: "secondary", realizado: "default", cancelado: "destructive",
 };
 
@@ -92,7 +92,7 @@ onMounted(async () => {
         <CardHeader class="pb-2">
           <div class="flex items-start justify-between gap-2">
             <CardTitle class="text-sm">{{ e.titulo }}</CardTitle>
-            <Badge :variant="(statusTone[e.status] as any) ?? 'default'">{{ e.status }}</Badge>
+            <Badge :variant="statusTone[e.status] ?? 'default'">{{ e.status }}</Badge>
           </div>
           <CardDescription class="flex items-center gap-1 text-xs">
             <CalendarDays class="size-3" /> {{ e.data_evento }}

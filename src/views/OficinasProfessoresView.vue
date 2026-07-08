@@ -125,7 +125,7 @@ onMounted(async () => {
           <CardHeader class="flex flex-row items-center gap-3 space-y-0 pb-2">
             <Avatar>
               <AvatarImage :src="p.foto_url ?? ''" />
-              <AvatarFallback>{{ p.nome[0] }}</AvatarFallback>
+              <AvatarFallback>{{ p.nome?.[0] ?? "?" }}</AvatarFallback>
             </Avatar>
             <div>
               <CardTitle class="text-sm">{{ p.nome }}</CardTitle>

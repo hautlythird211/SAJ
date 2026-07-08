@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -16,7 +17,7 @@ import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import { Plus, ImageIcon, Video, FileText, Quote } from "@lucide/vue";
-import type { Conteudo } from "@/lib/types";
+import type { Conteudo, BadgeVariant } from "@/lib/types";
 
 const { conteudos, loading, fetchConteudos, createConteudo } = useConteudos();
 const { oficinas, professores, fetchOficinas, fetchProfessores } = useOficinas();
@@ -37,7 +38,7 @@ const formDescricao = computed({
 });
 
 const tipoIcon: Record<string, any> = { foto: ImageIcon, video: Video, texto: FileText, depoimento: Quote, bastidor: ImageIcon };
-const statusTone: Record<string, string> = {
+const statusTone: Record<string, BadgeVariant> = {
   rascunho: "outline", em_revisao: "secondary", aprovado: "default", publicado: "default", rejeitado: "destructive",
 };
 
@@ -151,39 +152,56 @@ onMounted(async () => {
       </Dialog>
     </div>
 
-    <div v-for="(items, group) in agrupados" :key="group" class="grid gap-2">
-      <h3 class="text-sm font-semibold text-muted-foreground">{{ group }} · {{ items.length }}</h3>
-      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        <Card v-for="c in items" :key="c.id">
-          <CardHeader class="pb-2">
-            <div class="flex items-start justify-between gap-2">
-              <CardTitle class="text-sm leading-snug">{{ c.titulo }}</CardTitle>
-              <component :is="tipoIcon[c.tipo]" class="size-4 shrink-0 text-muted-foreground" />
-            </div>
-          </CardHeader>
-          <CardContent class="grid gap-2">
-            <img
-              v-if="c.thumbnail_url || c.arquivo_url"
-              :src="c.thumbnail_url ?? c.arquivo_url ?? ''"
-              class="aspect-video w-full rounded-md object-cover bg-muted"
-            />
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-1.5">
-                <Avatar class="size-5">
-                  <AvatarImage :src="c.professores?.foto_url ?? ''" />
-                  <AvatarFallback class="text-[10px]">{{ c.professores?.nome?.[0] ?? "?" }}</AvatarFallback>
-                </Avatar>
-                <span class="text-xs text-muted-foreground">{{ c.professores?.nome ?? "—" }}</span>
-              </div>
-              <Badge :variant="(statusTone[c.status] as any) ?? 'default'" class="text-[10px]">{{ c.status }}</Badge>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+    <div v-if="loading" class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <Card v-for="i in 4" :key="i">
+        <CardHeader class="pb-2">
+          <Skeleton class="h-4 w-full" />
+        </CardHeader>
+        <CardContent class="grid gap-2">
+          <Skeleton class="aspect-video w-full rounded-md" />
+          <div class="flex items-center justify-between">
+            <Skeleton class="h-4 w-20" />
+            <Skeleton class="h-4 w-16" />
+          </div>
+        </CardContent>
+      </Card>
     </div>
 
-    <p v-if="!loading && conteudos.length === 0" class="text-sm text-muted-foreground">
-      Nenhum conteúdo cadastrado ainda.
-    </p>
+    <template v-else>
+      <div v-for="(items, group) in agrupados" :key="group" class="grid gap-2">
+        <h3 class="text-sm font-semibold text-muted-foreground">{{ group }} · {{ items.length }}</h3>
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <Card v-for="c in items" :key="c.id">
+            <CardHeader class="pb-2">
+              <div class="flex items-start justify-between gap-2">
+                <CardTitle class="text-sm leading-snug">{{ c.titulo }}</CardTitle>
+                <component :is="tipoIcon[c.tipo]" class="size-4 shrink-0 text-muted-foreground" />
+              </div>
+            </CardHeader>
+            <CardContent class="grid gap-2">
+              <img
+                v-if="c.thumbnail_url || c.arquivo_url"
+                :src="c.thumbnail_url ?? c.arquivo_url ?? ''"
+                class="aspect-video w-full rounded-md object-cover bg-muted"
+              />
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-1.5">
+                  <Avatar class="size-5">
+                    <AvatarImage :src="c.professores?.foto_url ?? ''" />
+                    <AvatarFallback class="text-[10px]">{{ c.professores?.nome?.[0] ?? "?" }}</AvatarFallback>
+                  </Avatar>
+                  <span class="text-xs text-muted-foreground">{{ c.professores?.nome ?? "—" }}</span>
+                </div>
+                <Badge :variant="statusTone[c.status] ?? 'default'" class="text-[10px]">{{ c.status }}</Badge>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <p v-if="conteudos.length === 0" class="text-sm text-muted-foreground">
+        Nenhum conteúdo cadastrado ainda.
+      </p>
+    </template>
   </div>
 </template>
