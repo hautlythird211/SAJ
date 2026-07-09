@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;700&family=Space+Mono&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050505;
+            --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.12);
+            --prism-1: #ff00ff;
+            --prism-2: #00ffff;
+            --prism-3: #ffff00;
+            --font-main: 'Space Grotesk', sans-serif;
+            --font-mono: 'Space Mono', monospace;
+            --font-lux: 'Playfair Display', serif;
+            --gold: #d4af37;
+            --champagne: #f7e7ce;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg);
+            background-image:
+                radial-gradient(circle, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+                radial-gradient(ellipse at 20% 50%, rgba(255, 0, 255, 0.05) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 50%, rgba(0, 255, 255, 0.05) 0%, transparent 50%);
+            background-size: 32px 32px, 100% 100%, 100% 100%;
+            color: #fff;
+            font-family: var(--font-main);
+            overflow-x: hidden;
+            min-height: 100vh;
+            padding-top: 64px;
+        }
+
+        /* ─── Infinity Canvas ─── */
+        .stage {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            padding: 0 80px 80px;
+            gap: 40px;
+            width: 100%;
+        }
+
+        /* Noise Texture - 40% opacity full screen */
+        .noise-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.4;
+            mix-blend-mode: overlay;
+        }
+
+
+        /* ─── Category Section Divider (SAJ Prata style) ─── */
+        .category-section {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 32px 0 20px;
+            margin: 20px 0 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .category-icon {
+            width: 42px;
+            height: 42px;
+            object-fit: contain;
+            flex-shrink: 0;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+
+        .category-section:hover .category-icon {
+            opacity: 1;
+        }
+
+        .category-label {
+            font-family: var(--font-main);
+            font-size: 1.15rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            color: rgba(255, 255, 255, 0.7);
+            white-space: nowrap;
+        }
+
+        .category-label small {
+            font-family: var(--font-mono);
+            font-weight: 300;
+            font-size: 0.6rem;
+            letter-spacing: 2px;
+            color: rgba(255, 255, 255, 0.3);
+            display: block;
+            margin-top: 4px;
+        }
+
+        /* ─── Gallery Grid ─── */
+        .gallery-item {
+            position: relative;
+            background: var(--glass);
+            backdrop-filter: blur(25px) saturate(150%);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: reveal 0.8s forwards;
+        }
+
+        @keyframes reveal {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .item-1  { grid-column: 1 / 9; height: 420px; clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%); transform: translateY(10px); }
+        .item-2  { grid-column: 9 / 13; height: 420px; clip-path: polygon(6% 0, 100% 0, 94% 100%, 0 100%); transform: translateY(-25px); }
+        .item-3  { grid-column: 1 / 7; height: 280px; transform: translateY(-10px); }
+        .item-4  { grid-column: 7 / 13; height: 280px; clip-path: polygon(0 10%, 100% 0, 100% 100%, 0 90%); transform: translateY(20px); }
+        .item-5  { grid-column: 1 / 6; height: 360px; clip-path: polygon(0 5%, 100% 0, 100% 95%, 0 100%); }
+        .item-6  { grid-column: 6 / 13; height: 360px; transform: translateY(25px); }
+        .item-7  { grid-column: 1 / 13; height: 300px; clip-path: polygon(0 10%, 100% 0, 100% 90%, 0 100%); transform: translateY(-15px); }
+        .item-8  { grid-column: 1 / 4; height: 340px; clip-path: polygon(0 0, 100% 8%, 100% 92%, 0 100%); }
+        .item-9  { grid-column: 4 / 9; height: 340px; transform: translateY(-20px); }
+        .item-10 { grid-column: 9 / 13; height: 340px; clip-path: polygon(8% 0, 100% 0, 92% 100%, 0 100%); transform: translateY(15px); }
+        .item-11 { grid-column: 1 / 8; height: 440px; clip-path: polygon(0 0, 100% 0, 94% 100%, 0 88%); transform: translateY(-10px); }
+        .item-12 { grid-column: 8 / 13; height: 440px; clip-path: polygon(6% 10%, 100% 0, 100% 100%, 0 90%); transform: translateY(20px); }
+
+        .gallery-item:hover {
+            border-color: rgba(255,255,255,0.4);
+            transform: scale(0.98) translateY(-5px);
+            box-shadow: 0 0 40px rgba(0, 255, 255, 0.1), 0 0 80px rgba(255, 0, 255, 0.1);
+        }
+
+        .img-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: #111;
+            mix-blend-mode: luminosity;
+            transition: mix-blend-mode 0.4s;
+        }
+
+        .gallery-item:hover .img-container {
+            mix-blend-mode: normal;
+        }
+
+        .distortion {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,0,255,0.1), rgba(0,255,255,0.1));
+            opacity: 0;
+            transition: opacity 0.4s;
+            pointer-events: none;
+        }
+
+        .gallery-item:hover .distortion {
+            opacity: 1;
+        }
+
+        .caption {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            background: rgba(0,0,0,0.8);
+            padding: 5px 10px;
+            backdrop-filter: blur(5px);
+        }
+
+        .art-placeholder {
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            filter: contrast(1.1) brightness(0.8);
+            transition: transform 1.2s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        .gallery-item:hover .art-placeholder {
+            transform: scale(1.1) rotate(1deg);
+        }
+
+        .p1  { background-image: url('https://sajprata.org.br/assets/images/carousel-img/Circo/imagem1_circo.jpg'); }
+        .p2  { background-image: url('https://sajprata.org.br/assets/images/carousel-img/Circo/imagem2_circo.jpg'); }
+        .p3  { background-image: url('https://sajprata.org.br/assets/images/carousel-img/Circo/imagem3_circo.jpg'); }
+        .p4  { background-image: url('https://sajprata.org.br/assets/images/carousel-img/Circo/imagem4_circo.jpg'); }
+        .p5  { background-image: url('https://sajprata.org.br/assets/images/carousel-img/Teatro/imagem1_teatro.jpg'); }
+        .p6  { background-image: url('https://sajprata.org.br/assets/images/carousel-img/Teatro/imagem2_teatro.jpg'); }
+        .p7  { background-image: url('https://sajprata.org.br/assets/images/carousel-img/Teatro/imagem3_teatro.jpg'); }
+        .p8  { background-image: url('https://sajprata.org.br/assets/images/carousel-img/Dança/imagem1_dancas.jpg'); }
+        .p9  { background-image: url('https://sajprata.org.br/assets/images/carousel-img/Dança/imagem2_dancas.jpg'); }
+        .p10 { background-image: url('https://sajprata.org.br/assets/images/carousel-img/Dança/imagem3_dancas.jpg'); }
+        .p11 { background-image: url('https://sajprata.org.br/assets/images/carousel-img/Futsal/imagem1_futsal.jpg'); }
+        .p12 { background-image: url('https://sajprata.org.br/assets/images/carousel-img/Futsal/imagem2_futsal.jpg'); }
+
+        footer {
+            grid-column: 1 / -1;
+            padding: 100px 0;
+            text-align: center;
+            font-family: var(--font-mono);
+            color: var(--border);
+            font-size: 0.8rem;
+        }
+
+        /* Prismatic Light Leaks */
+        .light-leak {
+            position: fixed;
+            width: 40vw;
+            height: 40vw;
+            background: radial-gradient(circle, rgba(0,255,255,0.05) 0%, transparent 70%);
+            top: -10vw;
+            right: -10vw;
+            z-index: -1;
+            filter: blur(60px);
+            animation: float 20s infinite alternate;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-10%, 10%); }
+        }
+
+        /* ─── Top Navigation ─── */
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            padding: 0 80px;
+            background: rgba(5,5,5,0.7);
+            backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid var(--border);
+            transition: background 0.3s;
+        }
+
+        .top-nav.scrolled {
+            background: rgba(5,5,5,0.92);
+        }
+
+        .nav-inner {
+            max-width: 100%;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+        }
+
+        .nav-logo {
+            font-size: 1.3rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            text-decoration: none;
+            color: var(--champagne);
+            font-family: var(--font-lux);
+            font-style: italic;
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.15);
+            transition: text-shadow 0.3s;
+        }
+
+        .nav-logo:hover {
+            text-shadow: 0 0 30px rgba(212, 175, 55, 0.3);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 8px;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-links a {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            text-decoration: none;
+            color: rgba(255,255,255,0.5);
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            left: 16px;
+            right: 16px;
+            height: 1px;
+            background: var(--prism-2);
+            transform: scaleX(0);
+            transition: transform 0.3s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: #fff;
+        }
+
+        .nav-links a:hover::after,
+        .nav-links a.active::after {
+            transform: scaleX(1);
+        }
+
+        .nav-hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 4px;
+        }
+
+        .nav-hamburger span {
+            display: block;
+            width: 24px;
+            height: 1.5px;
+            background: #fff;
+            transition: all 0.3s;
+            border-radius: 2px;
+        }
+
+        .nav-hamburger.open span:nth-child(1) {
+            transform: rotate(45deg) translate(4px, 5px);
+        }
+
+        .nav-hamburger.open span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .nav-hamburger.open span:nth-child(3) {
+            transform: rotate(-45deg) translate(4px, -5px);
+        }
+
+        @media (max-width: 1024px) {
+            .top-nav {
+                padding: 0 40px;
+            }
+
+            .stage {
+                padding: 0 40px 60px;
+                gap: 24px;
+            }
+
+            .nav-inner {
+                max-width: 100%;
+            }
+
+            .item-1  { grid-column: 1 / 8; height: 340px; clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%); transform: translateY(8px); }
+            .item-2  { grid-column: 8 / 13; height: 340px; clip-path: polygon(6% 0, 100% 0, 94% 100%, 0 100%); transform: translateY(-18px); }
+            .item-3  { grid-column: 1 / 7; height: 240px; transform: translateY(-8px); }
+            .item-4  { grid-column: 7 / 13; height: 240px; clip-path: polygon(0 10%, 100% 0, 100% 100%, 0 90%); transform: translateY(15px); }
+            .item-5  { grid-column: 1 / 7; height: 300px; clip-path: polygon(0 5%, 100% 0, 100% 95%, 0 100%); }
+            .item-6  { grid-column: 7 / 13; height: 300px; transform: translateY(18px); }
+            .item-7  { grid-column: 1 / -1; height: 240px; clip-path: polygon(0 10%, 100% 0, 100% 90%, 0 100%); transform: translateY(-10px); }
+            .item-8  { grid-column: 1 / 5; height: 280px; clip-path: polygon(0 0, 100% 8%, 100% 92%, 0 100%); }
+            .item-9  { grid-column: 5 / 9; height: 280px; transform: translateY(-15px); }
+            .item-10 { grid-column: 9 / 13; height: 280px; clip-path: polygon(8% 0, 100% 0, 92% 100%, 0 100%); transform: translateY(12px); }
+            .item-11 { grid-column: 1 / 8; height: 360px; clip-path: polygon(0 0, 100% 0, 94% 100%, 0 88%); transform: translateY(-8px); }
+            .item-12 { grid-column: 8 / 13; height: 360px; clip-path: polygon(6% 10%, 100% 0, 100% 100%, 0 90%); transform: translateY(15px); }
+        }
+
+        @media (max-width: 768px) {
+            .top-nav {
+                padding: 0 20px;
+            }
+
+            .stage {
+                padding: 0 20px 40px;
+                gap: 20px;
+            }
+
+            .nav-inner {
+                max-width: 100%;
+        }
+
+        header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .logo {
+                font-size: 2.4rem;
+            }
+
+            .nav-hamburger {
+                display: flex;
+            }
+
+            .nav-links {
+                position: fixed;
+                top: 64px;
+                left: 0;
+                width: 100%;
+                flex-direction: column;
+                background: rgba(5,5,5,0.95);
+                backdrop-filter: blur(20px);
+                border-bottom: 1px solid var(--border);
+                padding: 20px;
+                gap: 4px;
+                transform: translateY(-110%);
+                opacity: 0;
+                transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+                pointer-events: none;
+            }
+
+            .nav-links.open {
+                transform: translateY(0);
+                opacity: 1;
+                pointer-events: all;
+            }
+
+            .nav-links a {
+                padding: 12px 16px;
+                width: 100%;
+            }
+
+            .nav-links a::after {
+                display: none;
+            }
+
+            .item-1  { grid-column: 1 / -1; height: 300px; clip-path: polygon(0 0, 100% 0, 100% 92%, 0 100%); transform: translateY(5px); }
+            .item-2  { grid-column: 1 / -1; height: 220px; clip-path: polygon(4% 0, 100% 0, 96% 100%, 0 100%); transform: translateY(-10px); }
+            .item-3  { grid-column: 1 / -1; height: 220px; transform: translateY(-5px); }
+            .item-4  { grid-column: 1 / -1; height: 220px; clip-path: polygon(0 8%, 100% 0, 100% 100%, 0 92%); transform: translateY(10px); }
+            .item-5  { grid-column: 1 / -1; height: 260px; clip-path: polygon(0 5%, 100% 0, 100% 95%, 0 100%); }
+            .item-6  { grid-column: 1 / -1; height: 260px; transform: translateY(12px); }
+            .item-7  { grid-column: 1 / -1; height: 220px; clip-path: polygon(0 8%, 100% 0, 100% 92%, 0 100%); transform: translateY(-8px); }
+            .item-8  { grid-column: 1 / -1; height: 240px; clip-path: polygon(0 0, 100% 6%, 100% 94%, 0 100%); }
+            .item-9  { grid-column: 1 / -1; height: 240px; transform: translateY(-10px); }
+            .item-10 { grid-column: 1 / -1; height: 240px; clip-path: polygon(6% 0, 100% 0, 94% 100%, 0 100%); transform: translateY(10px); }
+            .item-11 { grid-column: 1 / -1; height: 300px; clip-path: polygon(0 0, 100% 0, 96% 100%, 0 90%); transform: translateY(-5px); }
+            .item-12 { grid-column: 1 / -1; height: 300px; clip-path: polygon(4% 8%, 100% 0, 100% 100%, 0 92%); transform: translateY(12px); }
+
+            .category-section {
+                padding: 20px 0 12px;
+                margin: 12px 0;
+                gap: 12px;
+            }
+
+            .category-icon {
+                width: 32px;
+                height: 32px;
+            }
+
+            .category-label {
+                font-size: 0.95rem;
+                letter-spacing: 2px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <svg class="noise-overlay" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <filter id="noiseFilter">
+            <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="4" stitchTiles="stitch"/>
+        </filter>
+        <rect width="100%" height="100%" filter="url(#noiseFilter)"/>
+    </svg>
+
+    <div class="light-leak"></div>
+
+    <nav class="top-nav" role="navigation">
+        <div class="nav-inner">
+            <a href="#" class="nav-logo">SAJ Galeria</a>
+            <button class="nav-hamburger" aria-label="Menu" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav-links">
+                <li><a href="#" class="active">Circo</a></li>
+                <li><a href="#">Teatro</a></li>
+                <li><a href="#">Danças</a></li>
+                <li><a href="#">Futsal</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="stage">
+        <!-- Category: CIRCO -->
+        <div class="category-section">
+            <img class="category-icon" src="https://sajprata.org.br/assets/images/circo.png" alt="" loading="lazy">
+            <span class="category-label">Circo<small>Educadora Social Bea</small></span>
+        </div>
+
+        <div class="gallery-item item-1" style="animation-delay: 0.1s;">
+            <div class="img-container">
+                <div class="art-placeholder p1"></div>
+            </div>
+            <div class="distortion"></div>
+            <div class="caption">CIRCO // MALABARES</div>
+        </div>
+
+        <div class="gallery-item item-2" style="animation-delay: 0.15s;">
+            <div class="img-container">
+                <div class="art-placeholder p2"></div>
+            </div>
+            <div class="distortion"></div>
+            <div class="caption">CIRCO // ACROBACIAS</div>
+        </div>
+
+        <div class="gallery-item item-3" style="animation-delay: 0.2s;">
+            <div class="img-container">
+                <div class="art-placeholder p3"></div>
+            </div>
+            <div class="distortion"></div>
+            <div class="caption">CIRCO // EQUILÍBRIO</div>
+        </div>
+
+        <div class="gallery-item item-4" style="animation-delay: 0.25s;">
+            <div class="img-container">
+                <div class="art-placeholder p4"></div>
+            </div>
+            <div class="distortion"></div>
+            <div class="caption">CIRCO // DIVERSÃO</div>
+        </div>
+
+        <!-- Category: TEATRO -->
+        <div class="category-section">
+            <img class="category-icon" src="https://sajprata.org.br/assets/images/teatro.png" alt="" loading="lazy">
+            <span class="category-label">Teatro<small>Educador Social Matheus</small></span>
+        </div>
+
+        <div class="gallery-item item-5" style="animation-delay: 0.3s;">
+            <div class="img-container">
+                <div class="art-placeholder p5"></div>
+            </div>
+            <div class="distortion"></div>
+            <div class="caption">TEATRO // INTERPRETAÇÃO</div>
+        </div>
+
+        <div class="gallery-item item-6" style="animation-delay: 0.35s;">
+            <div class="img-container">
+                <div class="art-placeholder p6"></div>
+            </div>
+            <div class="distortion"></div>
+            <div class="caption">TEATRO // EXPRESSÃO</div>
+        </div>
+
+        <div class="gallery-item item-7" style="animation-delay: 0.4s;">
+            <div class="img-container">
+                <div class="art-placeholder p7"></div>
+            </div>
+            <div class="distortion"></div>
+            <div class="caption">TEATRO // CRIATIVIDADE</div>
+        </div>
+
+        <!-- Category: DANÇAS URBANAS -->
+        <div class="category-section">
+            <img class="category-icon" src="https://sajprata.org.br/assets/images/dan%C3%A7as.png" alt="" loading="lazy">
+            <span class="category-label">Danças Urbanas<small>Educadora Social Bia</small></span>
+        </div>
+
+        <div class="gallery-item item-8" style="animation-delay: 0.45s;">
+            <div class="img-container">
+                <div class="art-placeholder p8"></div>
+            </div>
+            <div class="distortion"></div>
+            <div class="caption">DANÇAS // MOVIMENTO</div>
+        </div>
+
+        <div class="gallery-item item-9" style="animation-delay: 0.5s;">
+            <div class="img-container">
+                <div class="art-placeholder p9"></div>
+            </div>
+            <div class="distortion"></div>
+            <div class="caption">DANÇAS // RITMO</div>
+        </div>
+
+        <div class="gallery-item item-10" style="animation-delay: 0.55s;">
+            <div class="img-container">
+                <div class="art-placeholder p10"></div>
+            </div>
+            <div class="distortion"></div>
+            <div class="caption">DANÇAS // EXPRESSÃO</div>
+        </div>
+
+        <!-- Category: FUTSAL -->
+        <div class="category-section">
+            <img class="category-icon" src="https://sajprata.org.br/assets/images/futsal.png" alt="" loading="lazy">
+            <span class="category-label">Futsal<small>Educadora Social Renata</small></span>
+        </div>
+
+        <div class="gallery-item item-11" style="animation-delay: 0.6s;">
+            <div class="img-container">
+                <div class="art-placeholder p11"></div>
+            </div>
+            <div class="distortion"></div>
+            <div class="caption">FUTSAL // TRABALHO EM EQUIPE</div>
+        </div>
+
+        <div class="gallery-item item-12" style="animation-delay: 0.65s;">
+            <div class="img-container">
+                <div class="art-placeholder p12"></div>
+            </div>
+            <div class="distortion"></div>
+            <div class="caption">FUTSAL // DISCIPLINA</div>
+        </div>
+
+        <footer>
+            SELECTED WORKS © ALL RIGHTS DISTORTED
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('mousemove', (e) => {
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+
+            document.querySelectorAll('.gallery-item').forEach(item => {
+                const rect = item.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+
+                if(mouseX > 0 && mouseX < rect.width && mouseY > 0 && mouseY < rect.height) {
+                    item.style.borderImageSource = `radial-gradient(circle at ${mouseX}px ${mouseY}px, rgba(0,255,255,0.5), transparent)`;
+                    item.style.borderImageSlice = "1";
+                }
+            });
+        });
+
+        const hamburger = document.querySelector('.nav-hamburger');
+        const navLinks = document.querySelector('.nav-links');
+        hamburger.addEventListener('click', () => {
+            const open = hamburger.classList.toggle('open');
+            navLinks.classList.toggle('open');
+            hamburger.setAttribute('aria-expanded', open);
+        });
+
+        navLinks.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('open');
+                navLinks.classList.remove('open');
+                hamburger.setAttribute('aria-expanded', 'false');
+            });
+        });
+
+        const topNav = document.querySelector('.top-nav');
+        window.addEventListener('scroll', () => {
+            topNav.classList.toggle('scrolled', window.scrollY > 40);
+        });
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationPlayState = 'running';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.gallery-item').forEach(item => {
+            observer.observe(item);
+        });
+    </script>
+</body>
+</html>
